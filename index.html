@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesan Ulang Tahun Meriah 🎉</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #FF6B6B; 
+            --secondary-color: #4ECDC4;
+            --bg-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            --card-bg: #ffffff;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+            border-top: 8px solid var(--primary-color); 
+        }
+
+        h1 {
+            font-family: 'Pacifico', cursive; 
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: normal;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+      
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            background: #e3fcf7;
+            color: var(--secondary-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-right: 15px;
+            font-weight: 600;
+            border: 1px solid var(--secondary-color);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7);
+            animation: pulse-teal 2s infinite;
+        }
+
+        @keyframes pulse-teal {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(78, 205, 196, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); }
+        }
+
+       
+        #message-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; 
+        }
+
+       
+        .message-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            animation: slideUpFade 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-left: 4px solid var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+       
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            background-color: #ffeaa7;
+            color: #d35400;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .sender-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+
+        .message-text {
+            color: var(--text-light);
+            line-height: 1.6;
+            font-size: 1rem;
+            padding-left: 45px;
+
+        .loading, .error {
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+            color: #aab0b3;
+            background: #f9f9f9;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>
+            <div class="live-badge"><span class="live-dot"></span>Live Feed</div>
+            Party Wishes 🎉
+        </h1>
+        <div id="message-list">
+            <p class="loading">🎁 Sedang mengambil pesan...</p>
+        </div>
+    </div>
+
+    <script>
+        const dbUrl = "https://note-ad793-default-rtdb.asia-southeast1.firebasedatabase.app/birthday_messages.json";
+        const messageList = document.getElementById('message-list');
+        let lastDataString = ""; 
+
+        async function fetchMessages() {
+            try {
+                
+                const response = await fetch(dbUrl + "?t=" + new Date().getTime());
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                const currentDataString = JSON.stringify(data);
+
+               
+                if (currentDataString === lastDataString) return; 
+                lastDataString = currentDataString;
+
+                renderMessages(data);
+            } catch (error) {
+                console.error("Gagal mengambil data, akan mencoba lagi...", error);
+              
+            }
+        }
+
+        function renderMessages(data) {
+            messageList.innerHTML = '';
+            if (!data) {
+                messageList.innerHTML = '<div class="loading">Belum ada pesan. Jadilah yang pertama! 🎂</div>';
+                return;
+            }
+
+            const entries = Object.keys(data).map(key => data[key]);
+            entries.reverse();
+            entries.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                
+                card.style.animationDelay = `${index * 0.1}s`; 
+
+                const name = item.nama || item.name || item.sender || 'Pengirim Misterius';
+                const msg = item.pesan || item.message || item.text || '';
+                const initial = name.charAt(0).toUpperCase();
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="avatar">${initial}</div>
+                        <div class="sender-name">${escapeHtml(name)}</div>
+                    </div>
+                    <div class="message-text">${escapeHtml(msg)}</div>
+                `;
+                messageList.appendChild(card);
+            });
+        }
+
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Jalankan
+        fetchMessages();
+        setInterval(fetchMessages, 3000); 
+
+    </script>
+</body>
+</html>
